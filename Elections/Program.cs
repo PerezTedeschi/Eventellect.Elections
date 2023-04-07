@@ -3,7 +3,6 @@ using Elections.Interfaces;
 using Elections.Ballots;
 using Elections.Elections;
 using System.Diagnostics;
-using System.Reflection;
 
 const int numVoters = 100_000;
 var voters = Voters.Create(numVoters, Candidates.Official);

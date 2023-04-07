@@ -1,4 +1,5 @@
 ﻿using Elections.Interfaces;
+using Elections.Models;
 
 namespace Elections.Ballots;
 
@@ -42,8 +43,4 @@ public static class RankedBallotFactory
     {
         return Random.Shared.Next() % candidates.Count + 1;
     }
-
-    private record RankedChoiceBallot(IVoter Voter, IReadOnlyList<IRankedVote> Votes) : IRankedBallot;
-
-    private record RankedChoiceVote(ICandidate Candidate, int Rank) : IRankedVote;
 }

@@ -1,4 +1,5 @@
 ﻿using Elections.Interfaces;
+using Elections.Models;
 
 namespace Elections;
 
@@ -45,7 +46,5 @@ public static class Candidates
     {
         var randomNumber = Random.Shared.Next();
         return randomNumber % _writeInFactor == 0;
-    }
-
-    private record Candidate(int Id, string Name) : ICandidate, IVoter;
+    }    
 }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Elections.Interfaces;
+﻿using Elections.Interfaces;
+using Elections.Models;
 
 namespace Elections;
 
@@ -21,7 +17,5 @@ public static class Voters
     private static IVoter CreateVoter(int id)
     {
         return new Voter(id, $"Voter {id}");
-    }
-
-    private record Voter(int Id, string Name) : IVoter;
+    }    
 }

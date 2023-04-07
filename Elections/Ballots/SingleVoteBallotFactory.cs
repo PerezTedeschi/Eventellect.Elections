@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using Elections.Interfaces;
+﻿using Elections.Interfaces;
+using Elections.Models;
 
 namespace Elections.Ballots;
 
@@ -26,9 +23,5 @@ public static class SingleVoteBallotFactory
 
         var voterCandidate = Candidates.SelectRandom(candidates);
         return new SimpleVote(voterCandidate);
-    }
-
-    private record SimpleBallot(IVoter Voter, IVote Vote) : ISingleVoteBallot;
-
-    private record SimpleVote(ICandidate Candidate) : IVote;
+    }        
 }
