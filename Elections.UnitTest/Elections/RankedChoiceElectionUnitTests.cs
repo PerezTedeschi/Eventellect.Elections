@@ -15,56 +15,55 @@ public class RankedChoiceElectionUnitTests : ElectionTestBase
     public void Run_ShouldReturnWinner_WhenOnlyOneCandidate()
     {
         // Arrange
-        var singleCandidateList = _candidates.Take(1).ToList();
         var ballots = new List<IRankedBallot>
         {
-            new RankedChoiceBallot(_voters[0], new List<IRankedVote> { new RankedChoiceVote(singleCandidateList[0], 1) } )
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) } )
         };
 
         // Act
-        var winner = _target.Run(ballots, singleCandidateList);
+        var winner = _target.Run(ballots);
 
         // Assert
-        Assert.AreEqual(singleCandidateList[0], winner);
+        Assert.AreEqual(_candidates[0], winner);
     }
 
     [TestMethod]
-    public void Run_ShouldReturnWriteInWinner_WhenWinnerIsNotAnOfficialCandidate()
-    {
-        // Arrange
-        var writeIn = new Candidate(100, "Candidate 100");
-        var ballots = new List<IRankedBallot>
-        {
-            new RankedChoiceBallot(_voters[0], new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
-            new RankedChoiceBallot(_voters[1], new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
-            new RankedChoiceBallot(_voters[2], new List<IRankedVote> { new RankedChoiceVote(writeIn, 1) }),
-            new RankedChoiceBallot(_voters[3], new List<IRankedVote> { new RankedChoiceVote(writeIn, 1) })
-        };
-
-        // Act
-        var winner = _target.Run(ballots, _candidates);
-
-        // Assert
-        Assert.AreEqual(writeIn, winner);
-    }
-
-    [TestMethod]
-    public void Run_ShouldReturnWinner_WhenMultipleCandidates()
+    public void Run_ShouldReturnWinner_WhenMultipleCandidatesWithRank1Only()
     {
         // Arrange
         var ballots = new List<IRankedBallot>
         {
-            new RankedChoiceBallot(_voters[0], new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
-            new RankedChoiceBallot(_voters[1], new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
-            new RankedChoiceBallot(_voters[2], new List<IRankedVote> { new RankedChoiceVote(_candidates[2], 1) }),
-            new RankedChoiceBallot(_voters[3], new List<IRankedVote> { new RankedChoiceVote(_candidates[2], 1) })
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[2], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[2], 1) })
         };
 
         // Act
-        var winner = _target.Run(ballots, _candidates);
+        var winner = _target.Run(ballots);
 
         // Assert
         Assert.AreEqual(_candidates[2], winner);
+    }
+
+    [TestMethod]
+    public void Run_ShouldReturnWinner_WhenMultipleCandidatesWithMultiRankChoise()
+    {
+        // Arrange
+        var ballots = new List<IRankedBallot>
+        {
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),            
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),            
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[2], 1), new RankedChoiceVote(_candidates[1], 2) })
+        };
+
+        // Act
+        var winner = _target.Run(ballots);
+
+        // Assert
+        Assert.AreEqual(_candidates[1], winner);
     }
 
     [TestMethod]
@@ -74,7 +73,7 @@ public class RankedChoiceElectionUnitTests : ElectionTestBase
         // Act
         var ballots = new List<IRankedBallot>();
 
-        var _ = _target.Run(ballots, _candidates);
+        var _ = _target.Run(ballots);
     }
 
     [TestMethod]
@@ -84,13 +83,13 @@ public class RankedChoiceElectionUnitTests : ElectionTestBase
         // Arrange
         var ballots = new List<IRankedBallot>
         {
-            new RankedChoiceBallot(_voters[0], new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
-            new RankedChoiceBallot(_voters[1], new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
-            new RankedChoiceBallot(_voters[2], new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
-            new RankedChoiceBallot(_voters[3], new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) })
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[0], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) }),
+            new RankedChoiceBallot(_voter, new List<IRankedVote> { new RankedChoiceVote(_candidates[1], 1) })
         };
 
         // Act
-        var _ = _target.Run(ballots, _candidates);
+        var _ = _target.Run(ballots);
     }
 }

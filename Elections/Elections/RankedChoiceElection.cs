@@ -1,71 +1,29 @@
 ﻿using Elections.Execptions;
 using Elections.Interfaces;
-using System.Diagnostics;
 
 namespace Elections.Elections;
 
 public class RankedChoiceElection : IElection<IRankedBallot>
 {
-    public ICandidate Run(IReadOnlyList<IRankedBallot> ballots, IReadOnlyList<ICandidate> candidates)
+    public ICandidate Run(IReadOnlyList<IRankedBallot> ballots)
     {
-        ArgumentNullException.ThrowIfNull(ballots);
-        ArgumentNullException.ThrowIfNull(candidates);
+        ArgumentNullException.ThrowIfNull(ballots);        
 
         if (ballots.Count == 0)
             throw new ArgumentOutOfRangeException(nameof(ballots));
-        
-        var remainingCandidates = new List<ICandidate>(candidates);
-        remainingCandidates.AddRange(ballots.SelectMany(ballot => ballot.Votes.Where(vote => !remainingCandidates.Contains(vote.Candidate)).Select(vote => vote.Candidate)));
 
-        var round = 1;
-        while(remainingCandidates.Count > 1)
+        var remainingCandidates = ballots.SelectMany(b => b.Votes).GroupBy(v => v.Candidate).Select(g => g.Key).ToList();        
+
+        while (remainingCandidates.Count > 1)
         {
-            Dictionary<ICandidate, int> currentVoteCounts = remainingCandidates.ToDictionary(c => c, c => 0);
-            
-            // Count the votes for each remaining candidate
-            foreach (var ballot in ballots)
+            var currentVoteCounts = CountVotes(ballots, remainingCandidates);
+            var winner = currentVoteCounts.FirstOrDefault(w => w.Value > currentVoteCounts.Sum(c => c.Value) / 2.0).Key;
+            if (winner != null)
             {
-                var highestRemainingChoice = ballot.Votes.OrderBy(v => v.Rank).FirstOrDefault(v => currentVoteCounts.ContainsKey(v.Candidate));
-                if (highestRemainingChoice != null)
-                {
-                    currentVoteCounts[highestRemainingChoice.Candidate]++;
-                }
+                return winner;
             }
 
-            Debug.WriteLine($"===================================================================================");
-            Debug.WriteLine($"Round {round}");
-            Debug.WriteLine($"Votes needed: {ballots.Count / 2.0 }");
-            foreach (var currentVoteCount in currentVoteCounts.OrderByDescending(x => x.Value))
-            {
-                Debug.WriteLine($"{currentVoteCount.Key.Name} Votes:{currentVoteCount.Value}");
-            }   
-
-            // Check if any candidate has a majority of the votes
-            var currentLeader = currentVoteCounts.FirstOrDefault(kv => kv.Value > currentVoteCounts.Sum(x => x.Value) / 2.0).Key;
-            if (currentLeader != null)
-            {
-                Debug.WriteLine($"Candidate {currentLeader.Name} wins");
-                return currentLeader;
-            }
-
-            Debug.WriteLine($"Total votes: {currentVoteCounts.Sum(x => x.Value)}");
-
-            // Eliminate the candidate with the fewest votes
-            var votesToEliminate = currentVoteCounts.OrderBy(kv => kv.Value).First().Value;            
-
-            // Count the votes for each remaining candidate
-            foreach (var currentVoteCount in currentVoteCounts)
-            {
-                if (currentVoteCount.Value.Equals(votesToEliminate))
-                {
-                    Debug.WriteLine($"Candidate {currentVoteCount.Key.Name} eliminated");
-                    remainingCandidates.Remove(currentVoteCount.Key);
-                }
-            }            
-
-            Debug.WriteLine($"===================================================================================");
-            Debug.WriteLine($"");
-            round++;
+            EliminateCandidates(remainingCandidates, currentVoteCounts);;
 
             if (remainingCandidates.Count.Equals(0))
             {
@@ -74,5 +32,27 @@ public class RankedChoiceElection : IElection<IRankedBallot>
         }
 
         return remainingCandidates.First();
+    }
+
+    private static void EliminateCandidates(List<ICandidate> remainingCandidates, Dictionary<ICandidate, int> currentVoteCounts)
+    {
+        var votesToEliminate = currentVoteCounts.Values.Min();
+        var candidatesToEliminate = currentVoteCounts.Where(v => v.Value == votesToEliminate).Select(c => c.Key).ToList();
+        remainingCandidates.RemoveAll(candidatesToEliminate.Contains);
+    }
+
+    private static Dictionary<ICandidate, int> CountVotes(IReadOnlyList<IRankedBallot> ballots, IList<ICandidate> remainingCandidates)
+    {
+        var currentVoteCounts = remainingCandidates.ToDictionary(c => c, c => 0); 
+        foreach (var ballot in ballots)
+        {
+            var highestRemainingChoice = ballot.Votes.OrderBy(v => v.Rank).FirstOrDefault(v => currentVoteCounts.ContainsKey(v.Candidate));
+            if (highestRemainingChoice != null)
+            {
+                currentVoteCounts[highestRemainingChoice.Candidate]++;
+            }
+        }
+
+        return currentVoteCounts;
     }
 }
