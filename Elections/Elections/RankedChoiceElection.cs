@@ -7,12 +7,12 @@ public class RankedChoiceElection : IElection<IRankedBallot>
 {
     public ICandidate Run(IReadOnlyList<IRankedBallot> ballots)
     {
-        ArgumentNullException.ThrowIfNull(ballots);        
+        ArgumentNullException.ThrowIfNull(ballots);
 
         if (ballots.Count.Equals(0))
             throw new ArgumentOutOfRangeException(nameof(ballots));
 
-        var remainingCandidates = ballots.SelectMany(b => b.Votes).GroupBy(v => v.Candidate).Select(g => g.Key).ToList();        
+        var remainingCandidates = ballots.SelectMany(b => b.Votes.Where(v => v.Rank == 1)).GroupBy(v => v.Candidate).Select(g => g.Key).ToList();
 
         while (remainingCandidates.Count > 1)
         {
@@ -21,8 +21,8 @@ public class RankedChoiceElection : IElection<IRankedBallot>
             if (winner != null)
             {
                 return winner;
-            }
-
+            }            
+            
             remainingCandidates.RemoveAll(c => currentVoteCounts[c].Equals(currentVoteCounts.Values.Min()));
 
             if (remainingCandidates.Count.Equals(0))
@@ -36,7 +36,7 @@ public class RankedChoiceElection : IElection<IRankedBallot>
 
     private static Dictionary<ICandidate, int> CountVotes(IReadOnlyList<IRankedBallot> ballots, IList<ICandidate> remainingCandidates)
     {
-        var currentVoteCounts = remainingCandidates.ToDictionary(c => c, c => 0); 
+        var currentVoteCounts = remainingCandidates.ToDictionary(c => c, c => 0);
         foreach (var ballot in ballots)
         {
             var highestRemainingChoice = ballot.Votes.OrderBy(v => v.Rank).FirstOrDefault(v => currentVoteCounts.ContainsKey(v.Candidate));
