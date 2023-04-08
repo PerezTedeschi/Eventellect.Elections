@@ -9,14 +9,14 @@ public class PluralityElection : IElection<ISingleVoteBallot>
     {
         ArgumentNullException.ThrowIfNull(ballots);
 
-        if (ballots.Count == 0)
+        if (ballots.Count.Equals(0))
             throw new ArgumentOutOfRangeException(nameof(ballots));
 
         var candidateVotes = ballots
                         .GroupBy(ballot => ballot.Vote.Candidate)
                         .ToDictionary(group => group.Key, group => group.Count());
         var maxVotes = candidateVotes.Max(v => v.Value);
-        var winners = candidateVotes.Where(v => v.Value == maxVotes).Select(v => v.Key).ToList();
+        var winners = candidateVotes.Where(v => v.Value.Equals(maxVotes)).Select(v => v.Key).ToList();
 
         if (!winners.Count.Equals(1))
             throw new ElectionException($"There is a tie between {winners.Count} candidates.");

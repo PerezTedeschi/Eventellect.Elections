@@ -9,7 +9,7 @@ public class RankedChoiceElection : IElection<IRankedBallot>
     {
         ArgumentNullException.ThrowIfNull(ballots);        
 
-        if (ballots.Count == 0)
+        if (ballots.Count.Equals(0))
             throw new ArgumentOutOfRangeException(nameof(ballots));
 
         var remainingCandidates = ballots.SelectMany(b => b.Votes).GroupBy(v => v.Candidate).Select(g => g.Key).ToList();        
@@ -23,7 +23,7 @@ public class RankedChoiceElection : IElection<IRankedBallot>
                 return winner;
             }
 
-            EliminateCandidates(remainingCandidates, currentVoteCounts);;
+            remainingCandidates.RemoveAll(c => currentVoteCounts[c].Equals(currentVoteCounts.Values.Min()));
 
             if (remainingCandidates.Count.Equals(0))
             {
@@ -32,13 +32,6 @@ public class RankedChoiceElection : IElection<IRankedBallot>
         }
 
         return remainingCandidates.First();
-    }
-
-    private static void EliminateCandidates(List<ICandidate> remainingCandidates, Dictionary<ICandidate, int> currentVoteCounts)
-    {
-        var votesToEliminate = currentVoteCounts.Values.Min();
-        var candidatesToEliminate = currentVoteCounts.Where(v => v.Value == votesToEliminate).Select(c => c.Key).ToList();
-        remainingCandidates.RemoveAll(candidatesToEliminate.Contains);
     }
 
     private static Dictionary<ICandidate, int> CountVotes(IReadOnlyList<IRankedBallot> ballots, IList<ICandidate> remainingCandidates)
